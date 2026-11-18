@@ -1,4 +1,4 @@
-name: Compiler APK Android (Block Neo 9x9)
+name: Compiler AAB Play Store (Block Neo 9x9)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android:
+  build-playstore:
     runs-on: ubuntu-latest
     steps:
       - name: Recuperation des fichiers du jeu
@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Installation de Capacitor et du plugin AdMob
+      - name: Installation de Capacitor et AdMob
         run: npm install
 
       - name: Creation du projet Android natif
@@ -31,19 +31,26 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Injection automatique de l'ID AdMob dans AndroidManifest.xml
+      - name: Injection de l'ID AdMob dans AndroidManifest.xml
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8827509730643317~2433447329"/>\n    </application>|g' "$MANIFEST"
 
-      - name: Compilation du fichier APK pour Samsung Galaxy S25 Ultra
+      - name: Generation de la cle de signature Play Store
+        run: |
+          keytool -genkey -v -keystore android/app/release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias blockneo -storepass BlockNeo2026! -keypass BlockNeo2026! -dname "CN=NeoGames, OU=Mobile, O=NeoGames, L=Montauban, ST=Occitanie, C=FR"
+
+      - name: Compilation et signature du fichier AAB (Play Store)
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew bundleRelease
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore app/release-key.jks -storepass BlockNeo2026! -keypass BlockNeo2026! app/build/outputs/bundle/release/app-release.aab blockneo
 
-      - name: Publication du fichier APK telechargeable
+      - name: Publication du fichier AAB et de la cle de sauvegarde
         uses: actions/upload-artifact@v4
         with:
-          name: Block-Neo-9x9-APK-Installable
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Block-Neo-9x9-PlayStore-AAB
+          path: |
+            android/app/build/outputs/bundle/release/app-release.aab
+            android/app/release-key.jks
