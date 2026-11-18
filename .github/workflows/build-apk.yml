@@ -23,9 +23,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Installation du SDK Android
-        uses: android-actions/setup-android@v3
-
       - name: Installation de Capacitor et du plugin AdMob
         run: npm install
 
