@@ -1,0 +1,52 @@
+name: Compiler APK Android (Block Neo 9x9)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperation des fichiers du jeu
+        uses: actions/checkout@v4
+
+      - name: Installation de Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installation de Java 17 (requis pour Android)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Installation du SDK Android
+        uses: android-actions/setup-android@v3
+
+      - name: Installation de Capacitor et du plugin AdMob
+        run: npm install
+
+      - name: Creation du projet Android natif
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Injection automatique de l'ID AdMob dans AndroidManifest.xml
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8827509730643317~2433447329"/>\n    </application>|g' "$MANIFEST"
+
+      - name: Compilation du fichier APK pour Samsung Galaxy S25 Ultra
+        working-directory: ./android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Publication du fichier APK telechargeable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Block-Neo-9x9-APK-Installable
+          path: android/app/build/outputs/apk/debug/app-debug.apk

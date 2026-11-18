@@ -1,0 +1,14 @@
+{
+  "appId": "com.neogames.blockneo9x9",
+  "appName": "Block Neo 9x9",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "AdMob": {
+      "appId": "ca-app-pub-8827509730643317~2433447329"
+    }
+  }
+}
