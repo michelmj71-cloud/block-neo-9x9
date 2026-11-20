@@ -31,10 +31,11 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Mise a niveau vers Android API 35 (Exigence Google Play)
+      - name: Mise a niveau vers Android API 35 et minSdk 24
         run: |
-          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 35/g' android/variables.gradle
-          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 35/g' android/variables.gradle
+       sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle
+       sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 35/g' android/variables.gradle
+       sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 35/g' android/variables.gradle
 
       - name: Injection de l'ID AdMob dans AndroidManifest.xml
         run: |
