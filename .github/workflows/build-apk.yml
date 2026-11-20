@@ -42,21 +42,16 @@ jobs:
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8827509730643317~2433447329"/>\n    </application>|g' "$MANIFEST"
 
-      - name: Generation de la cle de signature Play Store
+      - name: Compilation et signature avec la cle officielle
         run: |
-          keytool -genkey -v -keystore android/app/release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias blockneo -storepass BlockNeo2026! -keypass BlockNeo2026! -dname "CN=NeoGames, OU=Mobile, O=NeoGames, L=Montauban, ST=Occitanie, C=FR"
-
-      - name: Compilation et signature du fichier AAB (Play Store)
-        working-directory: ./android
-        run: |
+          cd android
           chmod +x gradlew
           ./gradlew bundleRelease
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore app/release-key.jks -storepass BlockNeo2026! -keypass BlockNeo2026! app/build/outputs/bundle/release/app-release.aab blockneo
+          cd ..
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore release-key.jks -storepass BlockNeo2026! -keypass BlockNeo2026! android/app/build/outputs/bundle/release/app-release.aab blockneo
 
-      - name: Publication du fichier AAB et de la cle de sauvegarde
+      - name: Publication du fichier AAB Play Store
         uses: actions/upload-artifact@v4
         with:
           name: Block-Neo-9x9-PlayStore-AAB
-          path: |
-            android/app/build/outputs/bundle/release/app-release.aab
-            android/app/release-key.jks
+          path: android/app/build/outputs/bundle/release/app-release.aab
