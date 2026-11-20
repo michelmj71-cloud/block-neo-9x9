@@ -42,16 +42,20 @@ jobs:
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8827509730643317~2433447329"/>\n    </application>|g' "$MANIFEST"
 
-      - name: Compilation et signature avec la cle officielle
+      - name: Compilation, signature et export du certificat PEM
         run: |
           cd android
           chmod +x gradlew
           ./gradlew bundleRelease
           cd ..
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore release-key.jks -storepass BlockNeo2026! -keypass BlockNeo2026! android/app/build/outputs/bundle/release/app-release.aab blockneo
+          cp android/app/build/outputs/bundle/release/app-release.aab app-release.aab
+          keytool -export -rfc -keystore release-key.jks -alias blockneo -storepass BlockNeo2026! -file upload_certificate.pem
 
-      - name: Publication du fichier AAB Play Store
+      - name: Publication du fichier AAB et du certificat PEM
         uses: actions/upload-artifact@v4
         with:
           name: Block-Neo-9x9-PlayStore-AAB
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          path: |
+            app-release.aab
+            upload_certificate.pem
